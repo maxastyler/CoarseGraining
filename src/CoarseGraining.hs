@@ -3,6 +3,8 @@ module CoarseGraining where
 import CGVector
 import PDBParser
 import GHC.Exts (groupWith)
+import Data.List
+import Data.Maybe (catMaybes)
 
 data Pair = Pair {atoms :: (Atom, Atom), name :: String, contacts :: Int, rIDs :: (Int, Int)}
   deriving (Show, Eq)
@@ -11,13 +13,15 @@ data BeadType = CAlpha | Sidechain deriving (Show, Eq)
 
 -- Calpha/Sidechain bead - similar to atoms but contains a list of atoms it is derived from
 data Bead = Bead {
-  bId :: Int,
-  bType :: BeadType,
-  residue :: Amino,
-  bResId :: Int,
-  bPos :: Vec Double,
-  nHeavy :: Int,
-  bAtoms :: [Atom]
+  bId :: Int, -- The id of the bead
+  bType :: BeadType, -- The type of the bead (calpha, sidechain)
+  residue :: Amino, -- The residue type of the bead
+  bChainId :: Char, -- The id of the chain (A..Z)
+  bResId :: Int, -- The residue id of the bead
+  bPos :: Vec Double, -- The position of the bead
+  nHeavy :: Int, -- The weight(?) of the bead
+  bAtoms :: [Atom], -- The list of atoms the bead contains
+  bSigma :: Double -- The temperature coefficient of the bead
                  } deriving (Eq)
 
 data Element = Carbon | Flourine | Hydrogen |
@@ -41,8 +45,32 @@ sortIntoResidues :: [Atom] -> [([Atom], [Atom])]
 sortIntoResidues atoms = let grouped = groupWith (\x -> (chainID x, resSeq x)) atoms
                          in map (break (not . isBackbone)) grouped
 
-cAlphaBead :: [Atom] -> Maybe Atom
+calcSigma :: Double -> Double
+calcSigma nHeavy = 4*(nHeavy/4)**(1/3)
 
+-- Function to make the Calpha bead with a given id from a list of calpha atoms
+getCAlpha :: [Atom] -> Int -> Maybe Bead
+getCAlpha ats id = let mCAlpha = find (\x -> PDBParser.name x == "CA") ats
+                   in
+                     case mCAlpha of
+                       Nothing -> Nothing
+                       Just calpha -> Just $ Bead id CAlpha (resName calpha) (chainID calpha) (resSeq calpha) (Vec [x calpha, y calpha, z calpha]) 4 ats (calcSigma 4)
 
-coarseGrainAtoms :: [Atom] -> [Atom]
-coarseGrainAtoms = undefined
+getSideChain :: [Atom] -> Int -> Maybe Bead
+getSideChain [] _ = Nothing
+getSideChain ats id = Just $ Bead id Sidechain (resName at) (chainID at) (resSeq at) (Vec [x at, y at, z at]) (length ats) ats (calcSigma $ fromIntegral $ length ats)
+  where at = head ats
+
+-- Renumber the list of beads
+reNumBeads :: [Bead] -> Int -> [Bead]
+reNumBeads [] _ = []
+reNumBeads (b:bs) i = b { bId = i } : (reNumBeads bs (i+1))
+
+-- Turn a list of atoms into a list of beads
+coarseGrainAtoms :: [Atom] -> [Bead]
+coarseGrainAtoms ats = let residues = sortIntoResidues ats
+                           makeBeads :: ([Atom], [Atom]) -> [Maybe Bead]
+                           makeBeads (a1, a2) = [getCAlpha a1 0, getSideChain a2 0]
+                           unNumChain = foldl (++) [] $ map makeBeads residues
+                       in
+                         reNumBeads (catMaybes unNumChain) 0
