@@ -6,7 +6,9 @@ import GHC.Exts (groupWith)
 import Data.List
 import Data.Maybe (catMaybes)
 
-data Pair = Pair {beads :: (Bead, Bead), contacts :: Int, rIDs :: (Int, Int)}
+data Contact = Bond deriving (Show, Eq)
+
+data Pair = Pair {beads :: (Bead, Bead), contacts :: Int, rIDs :: (Int, Int), contactType :: Contact}
   deriving (Eq)
 
 pairName :: Pair -> String
@@ -95,4 +97,5 @@ zipAll = \a b -> (a >>= \ai -> (map (\bi -> (ai, bi)) b))
 
 genPairs :: [Bead] -> Maybe [Pair]
 genPairs bs = let beadPairs = createPairs bs
+                  beadAtomPairs = zipAll 
                  in undefined
