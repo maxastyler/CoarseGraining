@@ -24,6 +24,14 @@ instance (Show a) => Show (Vec a) where
 (.*) :: (Num a) => Vec a -> a -> Vec a
 (Vec a) .* b = Vec $ map (*b) a
 
+-- Access element at i, indexed from 1
+(|.) :: Vec a -> Int -> a
+(Vec a) |. i = a !! (i-1)
+
+-- Get the dimension of the vector
+dim :: Vec a -> Int
+dim (Vec a) = length a
+
 --The magnitude squared of the vector (useful if comparing lengths of vectors)
 magSq :: (Num a) => Vec a -> a
 magSq v = v.^v
