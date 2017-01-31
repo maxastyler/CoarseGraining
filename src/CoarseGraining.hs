@@ -7,6 +7,19 @@ import GHC.Exts (groupWith)
 data Pair = Pair {atoms :: (Atom, Atom), name :: String, contacts :: Int, rIDs :: (Int, Int)}
   deriving (Show, Eq)
 
+data BeadType = CAlpha | Sidechain deriving (Show, Eq)
+
+-- Calpha/Sidechain bead - similar to atoms but contains a list of atoms it is derived from
+data Bead = Bead {
+  bId :: Int,
+  bType :: BeadType,
+  residue :: Amino,
+  bResId :: Int,
+  bPos :: Vec Double,
+  nHeavy :: Int,
+  bAtoms :: [Atom]
+                 } deriving (Eq)
+
 data Element = Carbon | Flourine | Hydrogen |
                Nitrogen | Oxygen | Sulphur deriving (Show, Eq)
 
@@ -27,6 +40,9 @@ isBackbone a = let at = PDBParser.name a
 sortIntoResidues :: [Atom] -> [([Atom], [Atom])]
 sortIntoResidues atoms = let grouped = groupWith (\x -> (chainID x, resSeq x)) atoms
                          in map (break (not . isBackbone)) grouped
+
+cAlphaBead :: [Atom] -> Maybe Atom
+
 
 coarseGrainAtoms :: [Atom] -> [Atom]
 coarseGrainAtoms = undefined
