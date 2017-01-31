@@ -2,6 +2,7 @@ module CoarseGraining where
 
 import CGVector
 import PDBParser
+import GHC.Exts (groupWith)
 
 data Pair = Pair {atoms :: (Atom, Atom), name :: String, contacts :: Int, rIDs :: (Int, Int)}
   deriving (Show, Eq)
@@ -17,6 +18,15 @@ mass e = case e of
   Nitrogen -> 14.0067
   Oxygen -> 15.9994
   Sulphur -> 32.065
+
+isBackbone :: Atom -> Bool
+isBackbone a = let at = PDBParser.name a
+               in at=="CA" || at == "N" || at == "C" || at == "O"
+
+-- Takes a list of atoms and produces a list of tuples containing (c-alpha atoms, sidechain atoms (if any))
+sortIntoResidues :: [Atom] -> [([Atom], [Atom])]
+sortIntoResidues atoms = let grouped = groupWith (\x -> (chainID x, resSeq x)) atoms
+                         in map (break (not . isBackbone)) grouped
 
 coarseGrainAtoms :: [Atom] -> [Atom]
 coarseGrainAtoms = undefined
