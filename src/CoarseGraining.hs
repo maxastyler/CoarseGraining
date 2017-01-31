@@ -6,7 +6,7 @@ import GHC.Exts (groupWith)
 import Data.List
 import Data.Maybe (catMaybes)
 
-data Pair = Pair {atoms :: (Atom, Atom), name :: String, contacts :: Int, rIDs :: (Int, Int)}
+data Pair = Pair {beads :: (Bead, Bead), name :: String, contacts :: Int, rIDs :: (Int, Int)}
   deriving (Show, Eq)
 
 data BeadType = CAlpha | Sidechain deriving (Show, Eq)
@@ -74,3 +74,6 @@ coarseGrainAtoms ats = let residues = sortIntoResidues ats
                            unNumChain = foldl (++) [] $ map makeBeads residues
                        in
                          reNumBeads (catMaybes unNumChain) 0
+
+createPairs :: [Bead] -> [Pair]
+createPairs = undefined
