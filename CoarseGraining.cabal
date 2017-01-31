@@ -17,8 +17,8 @@ cabal-version:       >=1.10
 
 executable CoarseGraining
   main-is:             Main.hs
-  -- other-modules:       
+  other-modules:       CGVector, CoarseGraining
   -- other-extensions:    
   build-depends:       base >=4.9 && <4.10
-  hs-source-dirs:      src
+  hs-source-dirs:      src ../PDB-Parser/src
   default-language:    Haskell2010
