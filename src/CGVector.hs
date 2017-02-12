@@ -2,7 +2,7 @@ module CGVector where
 
 import Data.List (intercalate)
 
-data Vec a = Vec [a] deriving (Eq)
+data Vec a = Vec [a] deriving (Eq, Ord)
 
 instance (Show a) => Show (Vec a) where
   show (Vec []) = "{}"
