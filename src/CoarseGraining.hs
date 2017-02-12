@@ -119,7 +119,8 @@ genPairs bds cts= let unfilteredContactPairs = map (flip contactToPair bds) cts
                   in
                     map (\pairs -> (head pairs) {contacts = length pairs, pFactor = getPFactor (head pairs)}) groupedContactPairs
 
---Extracts pairs from a file of the format: Int Int Int Int
+--Extracts pairs from a contacts file of the format: Int Int Int Int
+--This removes the first line, so be careful!!
 --Taking the second and fourth columns
 --Giving contacts list
 extractPairs :: String -> [(Int, Int)]
