@@ -8,7 +8,8 @@ import Data.Maybe (catMaybes)
 
 data Contact = Bond deriving (Show, Eq, Ord)
 
-data Pair = Pair {beads :: (Bead, Bead), contacts :: Int, contactType :: Contact}
+--A pair of beads (this is a contact between beads). Gives a tuple of the two beads, the contacts, the pfactor and the contactType
+data Pair = Pair {beads :: (Bead, Bead), contacts :: Int, pFactor :: Double, contactType :: Contact}
   deriving (Eq, Ord)
 
 --Gets a pair of residue ids from a Pair of Bead(s)
@@ -105,11 +106,15 @@ zipAll :: [a]->[b]->[(a, b)]
 zipAll = \a b -> (a >>= \ai -> (map (\bi -> (ai, bi)) b))
 
 contactToPair :: (Int, Int) -> [Bead] -> Pair
-contactToPair (c1, c2) bds = Pair (b1, b2) 1 Bond
+contactToPair (c1, c2) bds = Pair (b1, b2) 1 0 Bond
   where Just b1 = find (beadContainsId c1) bds
         Just b2 = find (beadContainsId c2) bds
 
-genPairs :: [Bead] -> [(Int, Int)] -> Maybe [Pair]
-genPairs bds cts= let groupedContactPairs = groupWith id $ map contactToPair cts
+--This long horrible function should generate the contact pairs with the correct p-factor
+genPairs :: [Bead] -> [(Int, Int)] -> [Pair]
+genPairs bds cts= let unfilteredContactPairs = map (flip contactToPair bds) cts
+                      contactRIds = map (\rIdCts -> (head rIdCts , length rIdCts )) $ groupWith id $ map rIDs unfilteredContactPairs
+                      groupedContactPairs = groupWith id $ unfilteredContactPairs
+                      getPFactor pr = 1.0 * fromIntegral (contacts pr) / fromIntegral (snd $ head $ filter (\rPr -> fst rPr == (rIDs pr)) contactRIds)
                   in
-                    undefined
+                    map (\pairs -> (head pairs) {contacts = length pairs, pFactor = getPFactor (head pairs)}) groupedContactPairs
