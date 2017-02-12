@@ -9,7 +9,7 @@ import Data.Maybe (catMaybes)
 data Contact = Bond deriving (Show, Eq, Ord)
 
 data Pair = Pair {beads :: (Bead, Bead), contacts :: Int, contactType :: Contact}
-  deriving (Eq)
+  deriving (Eq, Ord)
 
 --Gets a pair of residue ids from a Pair of Bead(s)
 rIDs :: Pair -> (Int, Int)
@@ -23,7 +23,7 @@ pairName pair = (show $ bType b1) ++ (show $ bResId b1) ++ "-" ++ (show $ bType 
         b1 = fst beadies
         b2 = snd beadies
 
-data BeadType = CAlpha | Sidechain deriving (Eq)
+data BeadType = CAlpha | Sidechain deriving (Eq, Ord)
 
 instance Show BeadType where
   show CAlpha = "CA"
