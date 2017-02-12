@@ -92,10 +92,13 @@ coarseGrainAtoms ats = let residues = sortIntoResidues ats
                        in
                          reNumBeads (catMaybes unNumChain) 0
 
+beadContainsId :: Bead -> Int -> Bool
+beadContainsId bd atId = any (\at -> serial at == atId) (bAtoms bd)
+
 zipAll :: [a]->[b]->[(a, b)]
 zipAll = \a b -> (a >>= \ai -> (map (\bi -> (ai, bi)) b))
 
-genPairs :: [Bead] -> Maybe [Pair]
-genPairs bs = let beadPairs = createPairs bs
-                  beadAtomPairs = zipAll 
-                 in undefined
+genPairs :: [Bead] -> [(Int, Int)] -> Maybe [Pair]
+genPairs bds cts= let contactToPair (c1, c2) beads = Nothing
+                  in
+                    undefined
