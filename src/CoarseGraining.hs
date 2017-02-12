@@ -6,10 +6,16 @@ import GHC.Exts (groupWith)
 import Data.List
 import Data.Maybe (catMaybes)
 
-data Contact = Bond deriving (Show, Eq)
+data Contact = Bond deriving (Show, Eq, Ord)
 
-data Pair = Pair {beads :: (Bead, Bead), contacts :: Int, rIDs :: (Int, Int), contactType :: Contact}
+data Pair = Pair {beads :: (Bead, Bead), contacts :: Int, contactType :: Contact}
   deriving (Eq)
+
+--Gets a pair of residue ids from a Pair of Bead(s)
+rIDs :: Pair -> (Int, Int)
+rIDs pr = (b1, b2)
+  where b1 = bResId $ fst $ beads pr
+        b2 = bResId $ snd $ beads pr
 
 pairName :: Pair -> String
 pairName pair = (show $ bType b1) ++ (show $ bResId b1) ++ "-" ++ (show $ bType b2) ++ (show $ bResId b2)
@@ -34,7 +40,7 @@ data Bead = Bead {
   nHeavy :: Int, -- The weight(?) of the bead
   bAtoms :: [Atom], -- The list of atoms the bead contains
   bSigma :: Double -- The temperature coefficient of the bead
-                 } deriving (Eq)
+                 } deriving (Eq, Ord)
 
 data Element = Carbon | Flourine | Hydrogen |
                Nitrogen | Oxygen | Sulphur deriving (Show, Eq)
@@ -92,13 +98,18 @@ coarseGrainAtoms ats = let residues = sortIntoResidues ats
                        in
                          reNumBeads (catMaybes unNumChain) 0
 
-beadContainsId :: Bead -> Int -> Bool
-beadContainsId bd atId = any (\at -> serial at == atId) (bAtoms bd)
+beadContainsId :: Int -> Bead -> Bool
+beadContainsId atId bd = any (\at -> serial at == atId) (bAtoms bd)
 
 zipAll :: [a]->[b]->[(a, b)]
 zipAll = \a b -> (a >>= \ai -> (map (\bi -> (ai, bi)) b))
 
+contactToPair :: (Int, Int) -> [Bead] -> Pair
+contactToPair (c1, c2) bds = Pair (b1, b2) 1 Bond
+  where Just b1 = find (beadContainsId c1) bds
+        Just b2 = find (beadContainsId c2) bds
+
 genPairs :: [Bead] -> [(Int, Int)] -> Maybe [Pair]
-genPairs bds cts= let contactToPair (c1, c2) beads = Nothing
+genPairs bds cts= let groupedContactPairs = groupWith id $ map contactToPair cts
                   in
                     undefined
