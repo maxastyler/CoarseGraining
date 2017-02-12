@@ -118,3 +118,9 @@ genPairs bds cts= let unfilteredContactPairs = map (flip contactToPair bds) cts
                       getPFactor pr = 1.0 * fromIntegral (contacts pr) / fromIntegral (snd $ head $ filter (\rPr -> fst rPr == (rIDs pr)) contactRIds)
                   in
                     map (\pairs -> (head pairs) {contacts = length pairs, pFactor = getPFactor (head pairs)}) groupedContactPairs
+
+--Extracts pairs from a file of the format: Int Int Int Int
+--Taking the second and fourth columns
+--Giving contacts list
+extractPairs :: String -> [(Int, Int)]
+extractPairs str = map (\ele -> (ele !! 1, ele !! 3)) $ map (map read . words) $ lines str :: [(Int, Int)]
